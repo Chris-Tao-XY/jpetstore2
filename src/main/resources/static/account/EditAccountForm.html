@@ -1,0 +1,462 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <link rel="StyleSheet" href="../css/jpetstore.css" type="text/css"
+          media="screen"/>
+
+    <meta name="generator"
+          content="HTML Tidy for Linux/x86 (vers 1st November 2002), see www.w3.org"/>
+    <title>JPetStore Demo</title>
+    <meta content="text/html; charset=windows-1252"
+          http-equiv="Content-Type"/>
+    <meta http-equiv="Cache-Control" content="max-age=0"/>
+    <meta http-equiv="Cache-Control" content="no-cache"/>
+    <meta http-equiv="expires" content="0"/>
+    <meta http-equiv="Expires" content="Tue, 01 Jan 1980 1:00:00 GMT"/>
+    <meta http-equiv="Pragma" content="no-cache"/>
+
+    <script src="../script/jquery-1.7.2.js">
+    </script>
+    <style type="text/css">
+        #Catalog input[name="button"] {
+            padding: .3ex;
+            color: #fff;
+            background-color: gray;
+            text-decoration: none;
+            font-family: helvetica, tahoma, arial, verdana, sans-serif;
+            font-size: 1.5ex;
+            border-width: 0;
+            width: 150px;
+        }
+
+        #Catalog input[name="button"]:hover {
+            color: #000;
+            background-color: gray;
+            cursor: none;
+            width: 150px;
+        }
+
+        #Catalog input[name="editAccount"] {
+            padding: .3ex;
+            color: #fff;
+            background-color: green;
+            text-decoration: none;
+            font-family: helvetica, tahoma, arial, verdana, sans-serif;
+            font-size: 1.5ex;
+            border-width: 0;
+            width: 150px;
+        }
+
+        #Catalog input[name="editAccount"]:hover {
+            color: #000;
+            background-color: #54c07a;
+            cursor: pointer;
+            width: 150px;
+        }
+    </style>
+
+    <script type="text/javascript">
+        $(function () {
+            $.ajax({
+                url: "http://localhost:8080/isSigin",
+                type: "get",
+                dataType: "json",
+                data: {},
+                success:
+                    function (data) {
+                        if (data.code != 200) {
+                            $("#signin").text("Sign In");
+                            alert("please sign in first!");
+                            window.location = "http://localhost:63342/mypetstore2/static/account/SignonForm.html";
+                        } else {
+                            $("#signin").attr("href","javascript:void(0)");
+                            $("#signin").attr("style", "color: red;")
+                            $("#signin").text(data.loginaccout);
+                            $("#username").text(data.loginaccout);
+                            aajax();
+                        }
+                    }
+            });
+            $("#signout").click(function (e) {
+                e.preventDefault();
+                if ($("#signin").text() == "Sign In") {
+                    return;
+                }
+                if (confirm("Hello,want to signout?")) {
+                    $.ajax({
+                        url: "http://localhost:8080/signout",
+                        type: "get",
+                        dataType: "json",
+                        data: {},
+                        success:
+                            function (data) {
+                                window.location = "http://localhost:63342/mypetstore2/static/account/SignonForm.html";
+                            }
+                    });
+                }
+            });
+            var aajax = function () {
+                $.ajax({
+                    url: "http://localhost:8080/account/" + $("#signin").text(),
+                    type: "get",
+                    dataType: "json",
+                    data: {},
+                    success:
+                        function (data) {
+                            $("#firstName").val(data.loginAccount.firstName);
+                            $("#lastName").val(data.loginAccount.lastName);
+                            $("#firstName").val(data.loginAccount.firstName);
+                            $("#email").val(data.loginAccount.email);
+                            $("#phone").val(data.loginAccount.phone);
+                            $("#addr1").val(data.loginAccount.address1);
+                            $("#addr2").val(data.loginAccount.address2);
+                            $("#city").val(data.loginAccount.city);
+                            $("#state").val(data.loginAccount.state);
+                            $("#zip").val(data.loginAccount.zip);
+                            $("#country").val(data.loginAccount.country);
+                        }
+                });
+            }
+            $("#email").blur(function () {
+                var emailText = $("#email").val();
+                var emailPatt = /^\w+((.\w+)|(-\w+))@[A-Za-z0-9]+((.|-)[A-Za-z0-9]+).[A-Za-z0-9]+$/;
+                if (!emailPatt.test(emailText)) {
+                    $("#eamilMessage").text("Wrong email!");
+                    $("#submit").attr("disabled", true);
+                    $("#submit").attr("name", "button");
+                } else {
+                    $("#eamilMessage").text("");
+                    $("#submit").attr("name", "submit");
+                    $("#submit").removeAttr("disabled");
+                }
+            });
+            $("#phone").blur(function () {
+                var phoneText = $("#phone").val();
+                var phonePatt = /^[0-9]*$/;
+                if (!phonePatt.test(phoneText)) {
+                    $("#phoneMessage").text("Wrong phone!");
+                    $("#submit").attr("disabled", true);
+                    $("#submit").attr("name", "button");
+                } else {
+                    $("#phoneMessage").text("");
+                    $("#submit").attr("name", "submit");
+                    $("#submit").removeAttr("disabled");
+                }
+            });
+            $("#submit").click(function (e) {
+                e.preventDefault();
+                $.ajax({
+                        url: "http://localhost:8080/account/" + $("#signin").text(),
+                        type: "put",
+                        dataType: "json",
+                        contentType: "application/json;charset=UTF-8",
+                        data: JSON.stringify({
+                            "username": $("#signin").text(),
+                            "firstName": $("#firstName").val(),
+                            "lastName": $("#lastName").val(),
+                            "email": $("#email").val(),
+                            "phone": $("#phone").val(),
+                            "address1": $("#addr1").val(),
+                            "address2": $("#addr2").val(),
+                            "status": "A",
+                            "city": $("#city").val(),
+                            "state": $("#state").val(),
+                            "zip": $("#zip").val(),
+                            "country": $("#country").val()
+                        }),
+                        success:
+                            function (data) {
+                                alert("update success!")
+                                window.location.reload;
+                            }
+                    }
+                )
+                ;
+            });
+            $("#searchtext").blur(function () {
+                $.ajax({
+                    url: "http://localhost:8080/item/search/" + $("#searchtext").val(),
+                    type: "get",
+                    dataType: "json",
+                    data: {},
+                    success:
+                        function (data) {
+                            if (data.code == 200 && data.category.length != 0) {
+                                var showText = `<tr class="showtable">
+                                    <th style=" color: purple; height: 15px">itemId</th>
+                                    <th style=" color: purple; height: 15px">price</th>
+                                </tr>`;
+                                for (var i = 0; i < data.category.length; i++) {
+                                    showText +=
+                                        `<tr class="showtable">
+                                            <td style=" color: purple; height: 15px"><a href="javascript:void(0)" class="tips" id="`+
+                                        data.category[i].itemId +`">`
+                                        + data.category[i].itemId +
+                                        `</a></td>
+                                            <td style=" color: purple; height: 15px">$` + data.category[i].listPrice + `</td>
+                                        </tr>`;
+                                }
+                                $("#show").append(showText);
+                                $(".show").show();
+                            }
+
+                        }
+                });
+            });
+            $("#searchtext").focus(function () {
+                $("#show").html("");
+                $(".show").hide();
+            });
+            $(document).on("click",".tips",function (e) {
+                $("#searchtext").val(e.target.id);
+                $("#show").html("");
+                $(".show").hide();
+            });
+            $("#searchbutton").click(function (e) {
+                e.preventDefault();
+                if ($("#searchtext").val() == "") {
+                    return;
+                }
+                $.ajax({
+                    url: "http://localhost:8080/item/searchOne/" + $("#searchtext").val(),
+                    type: "get",
+                    dataType: "json",
+                    data: {},
+                    success:
+                        function (data) {
+                            if (data.code!=200){
+                                alert("no such category!");
+                            }else{
+                                window.location="http://localhost:63342/mypetstore2/static/catalog/Product.html";
+                            }
+                        }
+                });
+            });
+        });
+    </script>
+</head>
+
+<body>
+
+
+<div id="Header">
+
+    <div id="Logo">
+        <div id="LogoContent">
+            <a href="../catalog/Main.html" img src="../images/logo-topbar.gif"/></a>
+        </div>
+    </div>
+
+    <div id="Menu">
+        <div id="MenuContent">
+            <a href="../cart/Cart.html"><img align="middle" name="img_cart"
+                                    src="../images/cart.gif"/></a> <img align="middle"
+                                                                        src="../images/separator.gif"/> <a
+                href="../account/SignonForm.html" id="signin">Sign In</a> <a id="signout" href="javascript:void(0)">Sign
+            Out</a> <img align="middle" src="../images/separator.gif"/> <a
+                href="../account/EditAccountForm.html">My Account</a> <img align="middle"
+                                                                           src="../images/separator.gif"/> <a
+                href="../help.html"></a>
+        </div>
+    </div>
+    <style type="text/css">
+
+        .show {
+            position: relative;
+            border: 1px solid #999;
+            border-top: 0;
+            display: none;
+            line-height: 2ex;
+            margin-left: 135px;
+            margin-right: 196px;
+            font-size: 15px;
+        }
+
+        .showtable {
+            border: none;
+        }
+    </style>
+    <div id="Search">
+        <div id="SearchContent">
+            <form action="../catalog/SearchProducts.html" method="post">
+                <input type="text" name="keyword" size="14" id="searchtext"/> <input type="submit" id="searchbutton"
+                                                                                     name="searchProducts"
+                                                                                     value="Search"/>
+            </form>
+            <div class="show">
+                <table id="show">
+
+                </table>
+            </div>
+        </div>
+    </div>
+    <div id="QuickLinks">
+        <a href="../catalog/FishCategory.html"><img
+                src="../images/sm_fish.gif"/></a> <img src="../images/separator.gif"/>
+        <a href="../catalog/DOGSCategory.html"><img
+                src="../images/sm_dogs.gif"/></a> <img src="../images/separator.gif"/>
+        <a href="../catalog/REPTILESCategory.html"><img
+                src="../images/sm_reptiles.gif"/></a> <img
+            src="../images/separator.gif"/>
+        <a href="../catalog/CATSCategory.html"><img
+                src="../images/sm_cats.gif"/></a> <img src="../images/separator.gif"/>
+        <a href="../catalog/BIRDSCategory.html"><img
+                src="../images/sm_birds.gif"/></a>
+    </div>
+</div>
+
+<div id="Content">
+
+    <div id="Catalog">
+
+
+        <form action="#" method="post">
+
+            <h3>User Information</h3>
+
+            <table>
+                <tbody>
+                <tr>
+                    <td>User ID:</td>
+                    <td id="username"></td>
+                </tr>
+                <tr>
+                    <td>New password:</td>
+                    <td><input id="stripes--517137302" name="password"
+                               type="text">
+                        <script type="text/javascript">
+                            setTimeout(
+                                function () {
+                                    try {
+                                        var z = document
+                                            .getElementById('stripes--517137302');
+                                        z.focus();
+                                        z.select();
+                                    } catch (e) {
+                                    }
+                                }, 1);
+                        </script>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Repeat password:</td>
+                    <td><input name="repeatedPassword" type="text"></td>
+                </tr>
+                </tbody>
+            </table>
+            <h3>Account Information</h3>
+
+            <table>
+                <tbody>
+                <tr>
+                    <td>First name:</td>
+                    <td><input name="account.firstName" id="firstName" type="text"></td>
+                </tr>
+                <tr>
+                    <td>Last name:</td>
+                    <td><input name="account.lastName" id="lastName" type="text"></td>
+                </tr>
+                <tr>
+                    <td>Email:</td>
+                    <td><input name="account.email"
+                               id="email" type="text" size="40" style="width:200px"><span style="color:red"
+                                                                                          id="eamilMessage"></span></td>
+                </tr>
+                <tr>
+                    <td>Phone:</td>
+                    <td><input name="account.phone" id="phone"
+                               type="text"><span style="color:red" id="phoneMessage"></span></td>
+                </tr>
+                <tr>
+                    <td>Address 1:</td>
+                    <td><input name="account.address1" id="addr1"
+                               type="text" size="40"></td>
+                </tr>
+                <tr>
+                    <td>Address 2:</td>
+                    <td><input name="account.address2" id="addr2"
+                               type="text" size="40"></td>
+                </tr>
+                <tr>
+                    <td>City:</td>
+                    <td><input name="account.city" id="city" type="text"></td>
+                </tr>
+                <tr>
+                    <td>State:</td>
+                    <td><input name="account.state" id="state" type="text"
+                               size="4"></td>
+                </tr>
+                <tr>
+                    <td>Zip:</td>
+                    <td><input name="account.zip" id="zip" type="text"
+                               size="10"></td>
+                </tr>
+                <tr>
+                    <td>Country:</td>
+                    <td><input name="account.country" id="country" type="text"
+                               size="15"></td>
+                </tr>
+                </tbody>
+            </table>
+
+            <h3>Profile Information</h3>
+
+            <table>
+                <tbody>
+                <tr>
+                    <td>Language Preference:</td>
+                    <td><select name="account.languagePreference">
+                        <option selected="selected" value="english">english</option>
+                        <option value="japanese">japanese</option>
+                    </select></td>
+                </tr>
+                <tr>
+                    <td>Favourite Category:</td>
+                    <td><select name="account.favouriteCategoryId">
+                        <option value="FISH">FISH</option>
+                        <option selected="selected" value="DOGS">DOGS</option>
+                        <option value="REPTILES">REPTILES</option>
+                        <option value="CATS">CATS</option>
+                        <option value="BIRDS">BIRDS</option>
+                    </select></td>
+                </tr>
+                <tr>
+                    <td>Enable MyList</td>
+                    <td><input name="account.listOption" value="true"
+                               type="checkbox" checked="checked"></td>
+                </tr>
+                <tr>
+                    <td>Enable MyBanner</td>
+                    <td><input name="account.bannerOption" value="true"
+                               type="checkbox" checked="checked"></td>
+                </tr>
+
+                </tbody>
+            </table>
+
+
+            <input name="editAccount" value="Save Account Information"
+                   id="submit" type="submit">
+
+        </form>
+        <a href="../order/ListOrders.html">My Orders</a>
+
+    </div>
+
+</div>
+
+<div id="Footer">
+
+    <div id="PoweredBy">
+        &nbsp<a href="www.csu.edu.cn">www.csu.edu.cn</a>
+    </div>
+
+        <div id="Banner"></div>
+
+</div>
+
+</body>
+</html>
